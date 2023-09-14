@@ -17,43 +17,281 @@ struct Str {
 }
 
 struct Int {
-	value i64
+	value int
 }
 
-type Term = Print | Str | string | i64 | Int
+struct Bool {
+	value bool
+}
+
+struct If {
+	condition Term
+	then Term
+	otherwise Term
+}
+
+struct Parameter {
+	text string
+}
+
+struct Var {
+	text string
+}
+
+struct Function {
+	parameters []Parameter
+	value Term
+}
+
+struct Call {
+	callee Term
+	arguments []Term
+}
+
+struct Let {
+	name Parameter
+	value Term
+	next Term
+}
+
+struct Binary {
+	lhs Term
+	op BinaryOp
+	rhs Term
+}
+
+struct Tuple {
+	first Term
+	second Term
+}
+
+struct First {
+	value Term
+}
+
+struct Second {
+	value Term
+}
+
+enum BinaryOp {
+	@none
+	add
+	sub
+	mul
+	div
+	rem
+	eq
+	neq
+	lt
+	gt
+	lte
+	gte
+	and
+	orop
+}
+
+type Term = Print | Str | string | int | bool | Int | Bool | Call | Binary | Function | Let | If | First | Second | Tuple | Var
+
+fn sum(lhs Term, rhs Term) Term {
+	if lhs is int && rhs is int {
+		lhs_value := lhs as int
+		rhs_value := rhs as int
+		return lhs_value + rhs_value
+	}
+	if lhs is int {
+		lhs_value := int(lhs).str()
+		rhs_value := rhs as string
+		return lhs_value + rhs_value
+	}
+	if rhs is int {
+		lhs_value := lhs as string
+		rhs_value := int(rhs).str()
+		return lhs_value + rhs_value
+	}
+	lhs_value := lhs as string
+	rhs_value := rhs as string
+	return lhs_value + rhs_value
+}
+
+fn solve_binary_op(lhs Term, binary_op BinaryOp, rhs Term) Term {
+	match binary_op {
+		.add {
+			return sum(lhs, rhs)
+		}
+		.sub {
+			lhs_value := lhs as int
+			rhs_value := rhs as int
+			return lhs_value - rhs_value
+		}
+		.mul {
+			lhs_value := lhs as int
+			rhs_value := rhs as int
+			return lhs_value * rhs_value
+		}
+		.div {
+			lhs_value := lhs as int
+			rhs_value := rhs as int
+			return lhs_value / rhs_value
+		}
+		.rem {
+			lhs_value := lhs as int
+			rhs_value := rhs as int
+			return lhs_value % rhs_value
+		}
+		.eq {
+			return lhs == rhs
+		}
+		.neq {
+			return lhs != rhs
+		}
+		.lt {
+			lhs_value := lhs as int
+			rhs_value := rhs as int
+			return lhs_value < rhs_value
+		}
+		.gt {
+			lhs_value := lhs as int
+			rhs_value := rhs as int
+			return lhs_value > rhs_value
+		}
+		.lte {
+			lhs_value := lhs as int
+			rhs_value := rhs as int
+			return lhs_value <= rhs_value
+		}
+		.gte {
+			lhs_value := lhs as int
+			rhs_value := rhs as int
+			return lhs_value >= rhs_value
+		}
+		.and {
+			lhs_value := lhs as bool
+			rhs_value := rhs as bool
+			return lhs_value && rhs_value
+		}
+		.orop {
+			lhs_value := lhs as bool
+			rhs_value := rhs as bool
+			return lhs_value || rhs_value
+		}
+		else {
+			return ""
+		}
+	}
+}
 
 fn interpreter(term Term) Term {
-	if term is Print {
-		value := interpreter(term.value)
-		if value is string {
-			println(value as string)
-		} else {
-			println(value as i64)
+	match term {
+		Print {
+			value := interpreter(term.value)
+			if value is string {
+				println(value as string)
+			} else if value is int {
+				println(value as int)
+			} else if value is bool {
+				println(value as bool)
+			}
+			return value
 		}
-		return value
-	} else if term is Str {
-		return term.value
-	} else if term is Int {
-		return term.value
+		Str {
+			return term.value
+		}
+		Int {
+			return term.value
+		}
+		Bool {
+			return term.value
+		}
+		Binary {
+			lhs := interpreter(term.lhs)
+			rhs := interpreter(term.rhs)
+			binary_op := term.op
+			return solve_binary_op(lhs, binary_op, rhs)
+		}
+		else {
+			return ""
+		}
 	}
-	return ""
+}
+
+fn binary_op_from_string(binary_op string) BinaryOp {
+	match binary_op {
+		'Add' {
+			return BinaryOp.add
+		}
+		'Sub' {
+			return BinaryOp.sub
+		}
+		'Mul' {
+			return BinaryOp.mul
+		}
+		'Div' {
+			return BinaryOp.div
+		}
+		'Rem' {
+			return BinaryOp.rem
+		}
+		'Eq' {
+			return BinaryOp.eq
+		}
+		'Neq' {
+			return BinaryOp.neq
+		}
+		'Lt' {
+			return BinaryOp.lt
+		}
+		'Gt' {
+			return BinaryOp.gt
+		}
+		'Lte' {
+			return BinaryOp.lte
+		}
+		'Gte' {
+			return BinaryOp.gte
+		}
+		'And' {
+			return BinaryOp.and
+		}
+		'Or' {
+			return BinaryOp.orop
+		}
+		else {
+			return BinaryOp.@none
+		}
+	}
 }
 
 fn json_to_ast(data_any json2.Any) !Term {
 	data := data_any.as_map()
 	kind := data["kind"]! as string
-	
-	if kind == "Print" {
-		value := json_to_ast(data["value"]!)!
-		return Print{value}
-	} else if kind == "Str" {
-		value := data["value"]! as string
-		return Str{value}
-	} else if kind == "Int" {
-		value := data["value"]! as i64
-		return Int{value}
+
+	match kind {
+		'Print' {
+			value := json_to_ast(data["value"]!)!
+			return Print{value}
+		}
+		'Str' {
+			value := data["value"]! as string
+			return Str{value}
+		}
+		'Int' {
+			value := int(data["value"]! as i64)
+			return Int{value}
+		}
+		'Bool' {
+			value := data["value"]! as bool
+			return Bool{value}
+		}
+		'Binary' {
+			lhs := json_to_ast(data["lhs"]!)!
+			op := binary_op_from_string(data["op"]! as string)
+			rhs := json_to_ast(data["rhs"]!)!
+			return Binary{lhs, op, rhs}
+		}
+		else {
+			return ""
+		}
 	}
-	return ""
 }
 
 fn main() {
