@@ -4,7 +4,7 @@ Não sei o que eu to fazendo, mas to fazendo. Nunca fiz um compiler, e nunca pro
 
 ### Checklist
 - [x] File
-- [ ] Location
+- [x] Location
 - [ ] Parameter
 - [ ] Var
 - [ ] Function
@@ -12,12 +12,12 @@ Não sei o que eu to fazendo, mas to fazendo. Nunca fiz um compiler, e nunca pro
 - [ ] Let
 - [x] Str
 - [x] Int
-- [ ] BinaryOp
-- [ ] Bool
-- [ ] If
-- [ ] Binary
+- [x] BinaryOp
+- [x] Bool
+- [x] If
+- [x] Binary
 - [ ] Tuple
 - [ ] First
 - [ ] Second
 - [x] Print
-- [ ] Term
+- [x] Term

@@ -208,6 +208,14 @@ fn interpreter(term Term) Term {
 			binary_op := term.op
 			return solve_binary_op(lhs, binary_op, rhs)
 		}
+		If {
+			condition := interpreter(term.condition) as bool
+			if condition {
+				return interpreter(term.then)
+			} else {
+				return interpreter(term.otherwise)
+			}
+		}
 		else {
 			return ""
 		}
@@ -287,6 +295,12 @@ fn json_to_ast(data_any json2.Any) !Term {
 			op := binary_op_from_string(data["op"]! as string)
 			rhs := json_to_ast(data["rhs"]!)!
 			return Binary{lhs, op, rhs}
+		}
+		'If' {
+			condition := json_to_ast(data["condition"]!)!
+			then := json_to_ast(data["then"]!)!
+			otherwise := json_to_ast(data["otherwise"]!)!
+			return If{condition, then, otherwise}
 		}
 		else {
 			return ""
