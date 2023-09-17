@@ -180,10 +180,10 @@ fn solve_binary_op(lhs Term, binary_op BinaryOp, rhs Term) Term {
 	}
 }
 
-fn interpreter(term Term) Term {
+fn interpreter(term Term, mut vars map[string]Term) Term {
 	match term {
 		Print {
-			value := interpreter(term.value)
+			value := interpreter(term.value, mut vars)
 			if value is string {
 				println(value as string)
 			} else if value is int {
@@ -203,18 +203,30 @@ fn interpreter(term Term) Term {
 			return term.value
 		}
 		Binary {
-			lhs := interpreter(term.lhs)
-			rhs := interpreter(term.rhs)
+			lhs := interpreter(term.lhs, mut vars)
+			rhs := interpreter(term.rhs, mut vars)
 			binary_op := term.op
 			return solve_binary_op(lhs, binary_op, rhs)
 		}
 		If {
-			condition := interpreter(term.condition) as bool
+			condition := interpreter(term.condition, mut vars) as bool
 			if condition {
-				return interpreter(term.then)
+				return interpreter(term.then, mut vars)
 			} else {
-				return interpreter(term.otherwise)
+				return interpreter(term.otherwise, mut vars)
 			}
+		}
+		Let {
+			name := term.name.text
+			value := interpreter(term.value, mut vars)
+			vars[name] = value
+			return interpreter(term.next, mut vars)
+		}
+		Var {
+			var := vars[term.text] or {
+				panic("Variable not found")
+			}
+			return var
 		}
 		else {
 			return ""
@@ -302,6 +314,17 @@ fn json_to_ast(data_any json2.Any) !Term {
 			otherwise := json_to_ast(data["otherwise"]!)!
 			return If{condition, then, otherwise}
 		}
+		'Let' {
+			name_struct := data["name"]!.as_map()
+			name := Parameter{name_struct["text"]! as string}
+			value := json_to_ast(data["value"]!)!
+			next := json_to_ast(data["next"]!)!
+			return Let{name, value, next}
+		}
+		'Var' {
+			text := data["text"]! as string
+			return Var{text}
+		}
 		else {
 			return ""
 		}
@@ -313,5 +336,6 @@ fn main() {
 	data := json2.raw_decode(json_txt)!.as_map()
 	term := json_to_ast(data["expression"]!)!
 	println(term)
-	interpreter(term)
+	mut vars := map[string]Term{}
+	interpreter(term, mut vars)
 }

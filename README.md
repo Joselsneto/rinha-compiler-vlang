@@ -5,11 +5,11 @@ Não sei o que eu to fazendo, mas to fazendo. Nunca fiz um compiler, e nunca pro
 ### Checklist
 - [x] File
 - [x] Location
-- [ ] Parameter
-- [ ] Var
+- [x] Parameter
+- [x] Var
 - [ ] Function
 - [ ] Call
-- [ ] Let
+- [x] Let
 - [x] Str
 - [x] Int
 - [x] BinaryOp
