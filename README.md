@@ -7,8 +7,8 @@ Não sei o que eu to fazendo, mas to fazendo. Nunca fiz um compiler, e nunca pro
 - [x] Location
 - [x] Parameter
 - [x] Var
-- [ ] Function
-- [ ] Call
+- [x] Function
+- [x] Call
 - [x] Let
 - [x] Str
 - [x] Int

@@ -228,11 +228,37 @@ fn interpreter(term Term, mut vars map[string]Term) Term {
 			}
 			return var
 		}
+		Function {
+			return term
+		}
+		Call {
+			callee := interpreter(term.callee, mut vars) as Function
+			arguments := term.arguments
+			parameters := callee.parameters as []Parameter
+
+			mut new_vars := vars.clone()
+
+			for index, param in parameters {
+				arg := interpreter(arguments[index], mut vars)
+				new_vars[param.text] = arg
+			}
+			return interpreter(callee.value, mut new_vars)
+		}
 		else {
 			return ""
 		}
 	}
 }
+
+
+/*
+		3
+	 / \
+
+	2
+ /
+1
+*/
 
 fn binary_op_from_string(binary_op string) BinaryOp {
 	match binary_op {
@@ -325,6 +351,26 @@ fn json_to_ast(data_any json2.Any) !Term {
 			text := data["text"]! as string
 			return Var{text}
 		}
+		'Function' {
+			parameters_map := data["parameters"]! as []json2.Any
+			mut parameters := []Parameter{}
+			for parameter in parameters_map {
+				param := parameter.as_map()
+				parameters << Parameter{param["text"]! as string}
+			}
+			value := json_to_ast(data["value"]!)!
+			return Function{parameters, value}
+		}
+		'Call' {
+			callee := json_to_ast(data["callee"]!)!
+			arguments_map := data["arguments"]! as []json2.Any
+			mut arguments := []Term{}
+			for argument in arguments_map {
+				arg := json_to_ast(argument)!
+				arguments << arg
+			}
+			return Call {callee, arguments}
+		}
 		else {
 			return ""
 		}
@@ -335,7 +381,7 @@ fn main() {
 	json_txt := os.read_file('files/test.json')!
 	data := json2.raw_decode(json_txt)!.as_map()
 	term := json_to_ast(data["expression"]!)!
-	println(term)
+	// println(term)
 	mut vars := map[string]Term{}
 	interpreter(term, mut vars)
 }
