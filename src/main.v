@@ -244,21 +244,25 @@ fn interpreter(term Term, mut vars map[string]Term) Term {
 			}
 			return interpreter(callee.value, mut new_vars)
 		}
+		Tuple {
+			 first := interpreter(term.first, mut vars)
+			 second := interpreter(term.second, mut vars)
+			 return Tuple{first, second}
+		}
+		First {
+			value := interpreter(term.value, mut vars) as Tuple
+			return value.first
+		}
+		Second {
+			value := interpreter(term.value, mut vars) as Tuple
+			return value.second
+		}
 		else {
 			return ""
 		}
 	}
 }
 
-
-/*
-		3
-	 / \
-
-	2
- /
-1
-*/
 
 fn binary_op_from_string(binary_op string) BinaryOp {
 	match binary_op {
@@ -371,6 +375,19 @@ fn json_to_ast(data_any json2.Any) !Term {
 			}
 			return Call {callee, arguments}
 		}
+		'Tuple' {
+			first := json_to_ast(data["first"]!)!
+			second := json_to_ast(data["second"]!)!
+			return Tuple {first, second}
+		}
+		'First' {
+			value := json_to_ast(data["value"]!)!
+			return First {value}
+		}
+		'Second' {
+			value := json_to_ast(data["value"]!)!
+			return Second {value}
+		}
 		else {
 			return ""
 		}
@@ -381,7 +398,6 @@ fn main() {
 	json_txt := os.read_file('files/test.json')!
 	data := json2.raw_decode(json_txt)!.as_map()
 	term := json_to_ast(data["expression"]!)!
-	// println(term)
 	mut vars := map[string]Term{}
 	interpreter(term, mut vars)
 }

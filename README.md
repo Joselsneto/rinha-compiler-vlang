@@ -16,8 +16,8 @@ Não sei o que eu to fazendo, mas to fazendo. Nunca fiz um compiler, e nunca pro
 - [x] Bool
 - [x] If
 - [x] Binary
-- [ ] Tuple
-- [ ] First
-- [ ] Second
+- [x] Tuple
+- [x] First
+- [x] Second
 - [x] Print
 - [x] Term
