@@ -396,7 +396,6 @@ fn json_to_ast(data_any json2.Any) !Term {
 
 fn main() {
 	path := os.args[1]
-	println(path)
 	json_txt := os.read_file(path)!
 	data := json2.raw_decode(json_txt)!.as_map()
 	term := json_to_ast(data["expression"]!)!

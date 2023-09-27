@@ -6,6 +6,7 @@ rinha-compiler-vlang
 *.so
 *.dylib
 *.dll
+massif.out.*
 
 # Ignore binary output folders
 bin/
